@@ -39,6 +39,9 @@ h1 {
 /*         border: 1px solid #AAAAAA; */
 }
 
+.gwt-DisclosurePanel .header {
+        color: red;
+}
 
 .navigationLink {
 /*         width: 100%; */
@@ -46,8 +49,34 @@ h1 {
         border: 5px solid #AAAAAA; */
 }
 
-.leftPaddedPanel {
-	padding-left: 100px;
+.editable {
+	background-color: #FAFAD2; <!-- light yellow -->					
 }
+
+.fieldDesc {
+	width: 100px;
+}
+
+.sectionHeaderLabel {
+	font-weight: bold;
+}
+
+.leftPaddedPanel {
+	padding-left: 50px;
+}
+
+.rightPaddedPanel {
+	padding-right: 50px;
+}
+
+.topPaddedPanel {
+	padding-top: 20px;
+}
+
+.leftBorderedPanel {
+	border-left: grey 2px dashed;
+	padding-left: 10px;
+}
+
 
 
