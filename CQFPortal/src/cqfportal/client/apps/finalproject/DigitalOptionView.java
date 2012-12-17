@@ -10,6 +10,7 @@ public class DigitalOptionView implements IViewRenderer {
 
 	@Override
 	public void renderFirstTime(FlowPanel rootFlowPanel) {
-		rootFlowPanel.add(new HTML("I am digital option viw in UVM"));
+		HTML html = new HTML("This is implemented in Excel. Click <a href=\"UVM.xlsm\">here</a> to download. (Requires Excel 2007 or above)");
+		rootFlowPanel.add(html);		
 	}
 }
