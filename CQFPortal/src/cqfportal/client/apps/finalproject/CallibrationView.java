@@ -66,6 +66,11 @@ public class CallibrationView implements IViewRenderer {
 		populateHJMInputs(getDefaultInputs());
 		
 		rootFlowPanel.add(horizontalPanel);
+		
+		HTML html = new HTML("<br><br><br>The principal component analysis is implemented in Excel. Click <a href=\"HJM_Calibration.xlsm\">here</a> to download. (Requires Excel 2007 or above)");
+		
+		rootFlowPanel.add(html);
+		
 	}
 	
 	public HJMCalib getHJMInputs() {
