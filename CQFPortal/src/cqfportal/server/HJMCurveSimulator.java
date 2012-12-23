@@ -66,12 +66,12 @@ public class HJMCurveSimulator {
 	
 	private double rand() {	
 		
-//		double r = rand.nextGaussian();		
+		double r = rand.nextGaussian();		
 		
-		double r = rand.nextDouble() + rand.nextDouble() + rand.nextDouble() +
-				rand.nextDouble() + rand.nextDouble() + rand.nextDouble() + 
-				rand.nextDouble() + rand.nextDouble() + rand.nextDouble() + 
-				rand.nextDouble() + rand.nextDouble() + rand.nextDouble() - 6;
+//		double r = rand.nextDouble() + rand.nextDouble() + rand.nextDouble() +
+//				rand.nextDouble() + rand.nextDouble() + rand.nextDouble() + 
+//				rand.nextDouble() + rand.nextDouble() + rand.nextDouble() + 
+//				rand.nextDouble() + rand.nextDouble() + rand.nextDouble() - 6;
 		
 		return r;
 	}	
