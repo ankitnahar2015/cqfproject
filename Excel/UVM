@@ -1,0 +1,218 @@
+Option Explicit
+
+Function GetFDOutput(Spot As Double, IntRate As Double, SigmaMinus As Double, _
+    SigmaPlus As Double, Strike As Double, Maturity As Double, _
+    BinaryPayoff As Double, CallOrPut As String, NAS As Long) As Variant
+       
+    Dim dS As Double
+    dS = 2 * Strike / NAS
+    
+    Dim dt As Double
+    dt = 0.9 / SigmaPlus / SigmaPlus / NAS / NAS
+    
+    Dim NTS As Long
+    NTS = Int(Maturity / dt)
+    dt = Maturity / NTS
+    
+    Dim AssetIter, TimeIter As Long
+    Dim VWorstOld(), VWorstNew() As Double
+    Dim VBestOld(), VBestNew() As Double
+    ReDim VWorstOld(0 To NAS)
+    ReDim VBestOld(0 To NAS)
+    ReDim VWorstNew(0 To NAS)
+    ReDim VBestNew(0 To NAS)
+    
+    'at expiry
+    For AssetIter = 0 To NAS
+        VWorstOld(AssetIter) = GetBinaryPayoff(dS * AssetIter, Strike, BinaryPayoff, CallOrPut)
+        'VWorstOld(AssetIter) = Application.Max(dS * AssetIter - Strike, 0)
+        VBestOld(AssetIter) = VWorstOld(AssetIter)
+    Next AssetIter
+    
+    Dim Delta, Gamma, Theta, Sigma, S As Double
+    
+    For TimeIter = 1 To NTS
+        For AssetIter = 1 To NAS - 1
+            S = AssetIter * dS
+            
+            'worst case
+            Delta = (VWorstOld(AssetIter + 1) - VWorstOld(AssetIter - 1)) / 2 / dS
+            Gamma = (VWorstOld(AssetIter + 1) + VWorstOld(AssetIter - 1) - 2 * VWorstOld(AssetIter)) / dS / dS
+            
+            Sigma = IIf(Gamma > 0, SigmaMinus, SigmaPlus)
+                        
+            Theta = IntRate * VWorstOld(AssetIter) - IntRate * S * Delta - 0.5 * Sigma * Sigma * S * S * Gamma
+            
+            VWorstNew(AssetIter) = VWorstOld(AssetIter) - Theta * dt
+            
+            'best case
+            Delta = (VBestOld(AssetIter + 1) - VBestOld(AssetIter - 1)) / 2 / dS
+            Gamma = (VBestOld(AssetIter + 1) + VBestOld(AssetIter - 1) - 2 * VBestOld(AssetIter)) / dS / dS
+            
+            Sigma = IIf(Gamma < 0, SigmaMinus, SigmaPlus)
+                        
+            Theta = IntRate * VBestOld(AssetIter) - IntRate * S * Delta - 0.5 * Sigma * Sigma * S * S * Gamma
+            
+            VBestNew(AssetIter) = VBestOld(AssetIter) - Theta * dt
+        Next AssetIter
+        
+        'All S terms vanish at 0. So simply discount at 0
+        VWorstNew(0) = VWorstOld(0) * (1 - IntRate)
+        VBestNew(0) = VBestOld(0) * (1 - IntRate)
+        
+        'value is constant for binary option when S is very large
+        VWorstNew(NAS) = VWorstNew(NAS - 1)
+        VBestNew(NAS) = VBestNew(NAS - 1)
+        
+        For AssetIter = 0 To NAS
+            VWorstOld(AssetIter) = VWorstNew(AssetIter)
+            VBestOld(AssetIter) = VBestNew(AssetIter)
+        Next AssetIter
+                
+    Next TimeIter
+    
+    Dim Output As Variant
+    ReDim Output(0 To NAS, 1 To 4) 'spot, payoff, v_worst, v_best
+    For AssetIter = 0 To NAS
+        Output(AssetIter, 1) = dS * AssetIter
+        Output(AssetIter, 2) = GetBinaryPayoff(dS * AssetIter, Strike, BinaryPayoff, CallOrPut)
+        Output(AssetIter, 3) = VWorstOld(AssetIter)
+        Output(AssetIter, 4) = VBestOld(AssetIter)
+    Next AssetIter
+    
+    GetFDOutput = Output
+End Function
+
+Function GetFDOutputWithHedge(IntRate As Double, SigmaMinus As Double, _
+    SigmaPlus As Double, Strike As Double, Maturity As Double, _
+    BinaryPayoff As Double, CallOrPut As String, NAS As Long, _
+    VanillaOptStrike1 As Double, VanillaOptMaturity1 As Double, VanillaOptQuantity1 As Double, _
+    VanillaOptStrike2 As Double, VanillaOptMaturity2 As Double, VanillaOptQuantity2 As Double) As Variant
+    
+    'assumes all 3 options - binary and the 2 static hedges have the same maturity
+       
+    Dim dS As Double
+    dS = 2 * Strike / NAS
+    
+    Dim dt As Double
+    dt = 0.9 / SigmaPlus / SigmaPlus / NAS / NAS
+    
+    Dim NTS As Long
+    NTS = Int(Maturity / dt)
+    dt = Maturity / NTS
+    
+    Dim AssetIter, TimeIter As Long
+    Dim VWorstOld(), VWorstNew() As Double
+    Dim VBestOld(), VBestNew() As Double
+    ReDim VWorstOld(0 To NAS)
+    ReDim VBestOld(0 To NAS)
+    ReDim VWorstNew(0 To NAS)
+    ReDim VBestNew(0 To NAS)
+    
+    'at expiry
+    For AssetIter = 0 To NAS
+        Dim Spot As Double
+        Spot = dS * AssetIter
+        
+        VWorstOld(AssetIter) = GetBinaryPayoff(Spot, Strike, BinaryPayoff, CallOrPut) + _
+            GetVanillaOptionPayoff(Spot, VanillaOptStrike1, CallOrPut) * VanillaOptQuantity1 + _
+            GetVanillaOptionPayoff(Spot, VanillaOptStrike2, CallOrPut) * VanillaOptQuantity2
+            
+        'VWorstOld(AssetIter) = Application.Max(dS * AssetIter - Strike, 0)
+        VBestOld(AssetIter) = VWorstOld(AssetIter)
+    Next AssetIter
+    
+    Dim Delta, Gamma, Theta, Sigma, S As Double
+    
+    For TimeIter = 1 To NTS
+        For AssetIter = 1 To NAS - 1
+            S = AssetIter * dS
+            
+            'worst case
+            Delta = (VWorstOld(AssetIter + 1) - VWorstOld(AssetIter - 1)) / 2 / dS
+            Gamma = (VWorstOld(AssetIter + 1) + VWorstOld(AssetIter - 1) - 2 * VWorstOld(AssetIter)) / dS / dS
+            
+            Sigma = IIf(Gamma > 0, SigmaMinus, SigmaPlus)
+                        
+            Theta = IntRate * VWorstOld(AssetIter) - IntRate * S * Delta - 0.5 * Sigma * Sigma * S * S * Gamma
+            
+            VWorstNew(AssetIter) = VWorstOld(AssetIter) - Theta * dt
+            
+            'best case
+            Delta = (VBestOld(AssetIter + 1) - VBestOld(AssetIter - 1)) / 2 / dS
+            Gamma = (VBestOld(AssetIter + 1) + VBestOld(AssetIter - 1) - 2 * VBestOld(AssetIter)) / dS / dS
+            
+            Sigma = IIf(Gamma < 0, SigmaMinus, SigmaPlus)
+                        
+            Theta = IntRate * VBestOld(AssetIter) - IntRate * S * Delta - 0.5 * Sigma * Sigma * S * S * Gamma
+            
+            VBestNew(AssetIter) = VBestOld(AssetIter) - Theta * dt
+        Next AssetIter
+        
+        'All S terms vanish at 0. So simply discount at 0
+        VWorstNew(0) = VWorstOld(0) * (1 - IntRate)
+        VBestNew(0) = VBestOld(0) * (1 - IntRate)
+        
+        'value is constant for binary option when S is very large
+        VWorstNew(NAS) = VWorstNew(NAS - 1)
+        VBestNew(NAS) = VBestNew(NAS - 1)
+        
+        For AssetIter = 0 To NAS
+            VWorstOld(AssetIter) = VWorstNew(AssetIter)
+            VBestOld(AssetIter) = VBestNew(AssetIter)
+        Next AssetIter
+                
+    Next TimeIter
+    
+    Dim Output As Variant
+    ReDim Output(0 To NAS, 1 To 4) 'spot, payoff, v_worst, v_best
+    For AssetIter = 0 To NAS
+        Spot = dS * AssetIter
+        Output(AssetIter, 1) = Spot
+        Output(AssetIter, 2) = GetBinaryPayoff(Spot, Strike, BinaryPayoff, CallOrPut) + _
+            GetVanillaOptionPayoff(Spot, VanillaOptStrike1, CallOrPut) * VanillaOptQuantity1 + _
+            GetVanillaOptionPayoff(Spot, VanillaOptStrike2, CallOrPut) * VanillaOptQuantity2
+            
+        Output(AssetIter, 3) = VWorstOld(AssetIter)
+        Output(AssetIter, 4) = VBestOld(AssetIter)
+    Next AssetIter
+    
+    GetFDOutputWithHedge = Output
+End Function
+
+Private Function GetBinaryPayoff(ByVal Spot As Double, ByVal Strike As Double, ByVal BinaryPayoff As Double, _
+    ByVal CallOrPut As String) As Double
+    
+    If (UCase(CallOrPut) = "CALL") Then
+        GetBinaryPayoff = IIf(Spot > Strike, BinaryPayoff, 0)
+    Else
+        GetBinaryPayoff = IIf(Spot < Strike, BinaryPayoff, 0)
+    End If
+End Function
+
+Private Function GetVanillaOptionPayoff(ByVal Spot As Double, ByVal Strike As Double, _
+    ByVal CallOrPut As String) As Double
+    
+    GetVanillaOptionPayoff = IIf(UCase(CallOrPut) = "CALL", Application.Max(Spot - Strike, 0), _
+        Application.Max(Strike - Spot, 0))
+        
+End Function
+
+Function GetBSPrice(Spot As Double, Strike As Double, Maturity As Double, IntRate As Double, Sigma As Double, _
+    CallOrPut As String) As Double
+    
+    Dim d1, d2 As Double
+    
+    d1 = Application.Ln(Spot / Strike) + (IntRate + 0.5 * Sigma * Sigma) * Maturity
+    d1 = d1 / Sigma / (Maturity ^ 0.5)
+    
+    d2 = d1 - Sigma * (Maturity ^ 0.5)
+    
+    If UCase(CallOrPut) = "CALL" Then
+        GetBSPrice = Spot * Application.NormSDist(d1) - Strike * Exp(-IntRate * Maturity) * Application.NormSDist(d2)
+    Else
+        GetBSPrice = Strike * Exp(-IntRate * Maturity) * Application.NormSDist(-d2) - Spot * Application.NormSDist(-d1)
+    End If
+
+End Function
+
