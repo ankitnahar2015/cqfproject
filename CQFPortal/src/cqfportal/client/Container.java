@@ -70,8 +70,8 @@ public class Container implements EntryPoint {
 			.renderFirstTime();				
 					
 		IView callibration = new DefaultView()
-			.setTitle("Callibration")
-			.setClickableText("Callibration")			
+			.setTitle("Calibration")
+			.setClickableText("Calibration")			
 			.setApp(app)
 			.setRenderer(cView)
 			.renderFirstTime();
