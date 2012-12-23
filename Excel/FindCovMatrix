@@ -1,0 +1,60 @@
+Option Explicit
+
+Function FindCovMatrix(rngData As Range) As Variant
+    Dim lNumRows As Long
+    Dim lNumCols As Long
+    
+    lNumRows = rngData.Rows.Count
+    lNumCols = rngData.Columns.Count
+    
+    Dim vData As Variant
+    ReDim vData(1 To lNumRows, 1 To lNumCols)
+    
+    vData = rngData
+    
+    Dim arrTS() As Variant
+    ReDim arrTS(1 To lNumCols)
+    
+    Dim lRowIndex As Long
+    Dim lColIndex As Long
+    
+    For lColIndex = 1 To lNumCols
+        Dim vTS As Variant
+        ReDim vTS(1 To lNumRows)
+        
+        For lRowIndex = 1 To lNumRows
+            vTS(lRowIndex) = vData(lRowIndex, lColIndex)
+        Next lRowIndex
+        
+        arrTS(lColIndex) = vTS
+    Next lColIndex
+    
+    Dim vOutput As Variant
+    ReDim vOutput(1 To lNumRows, 1 To lNumCols)
+    
+    Dim lNumDimensions As Long
+    lNumDimensions = lNumCols
+    
+    'initialize to 0
+    For lRowIndex = 1 To lNumDimensions
+        For lColIndex = 1 To lNumDimensions
+            vOutput(lRowIndex, lColIndex) = 0
+        Next lColIndex
+    Next lRowIndex
+    
+    For lRowIndex = 1 To lNumDimensions
+        For lColIndex = 1 To lNumDimensions
+        
+            'cov matrix is symetric
+            vOutput(lRowIndex, lColIndex) = vOutput(lColIndex, lRowIndex)
+            
+            If vOutput(lRowIndex, lColIndex) = 0 Then
+                vOutput(lRowIndex, lColIndex) = _
+                    WorksheetFunction.Covar(arrTS(lRowIndex), arrTS(lColIndex)) * 252
+            End If
+            
+        Next lColIndex
+    Next lRowIndex
+    
+    FindCovMatrix = vOutput
+End Function
