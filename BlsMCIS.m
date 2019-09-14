@@ -1,0 +1,9 @@
+function [Price, CI] = BlsMCIS(S0,K,r,T,sigma,NRepl)
+nuT = (r - 0.5*sigma^2)*T;
+siT = sigma * sqrt(T);
+ISnuT = log(K/S0) - 0.5*sigma^2*T;
+Veps = randn(NRepl,1);
+VY = ISnuT + siT*Veps;
+ISRatios = exp( (2*(nuT - ISnuT)*VY - nuT^2 + ISnuT^2)/2/siT^2);
+DiscPayoff = exp(-r*T)*max(0, (S0*exp(VY)-K));
+[Price, VarPrice, CI] = normfit(DiscPayoff.*ISRatios);

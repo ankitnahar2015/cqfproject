@@ -1,0 +1,9 @@
+function [fval,fjac] = cournotJac(q,c,eta)
+e = -1/eta;
+qtot = sum(q);
+fval = qtot^e + e*qtot^(e-1)*q - c.*q;
+fjac = zeros(2,2);
+fjac(1,1) = 2*e*qtot^(e-1) + e*(e-1)*qtot^(e-2)*q(1) - c(1);
+fjac(1,2) = e*qtot^(e-1) + e*(e-1)*qtot^(e-2)*q(2);
+fjac(2,1) = e*qtot^(e-1) + e*(e-1)*qtot^(e-2)*q(1);
+fjac(2,2) = 2*e*qtot^(e-1) + e*(e-1)*qtot^(e-2)*q(2) - c(2);

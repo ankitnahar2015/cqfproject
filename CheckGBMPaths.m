@@ -1,0 +1,11 @@
+function PercErrors = CheckGBMPaths(S0, mu, sigma, T, Paths);
+[NRepl, NTimes] = size(Paths);
+NSteps = NTimes-1;
+Tvet = (1:NSteps).*T/NSteps;
+SampleMean = mean(Paths(:,2:NTimes));
+TrueMean = S0 * exp(mu*Tvet);
+RelErrorM = abs((SampleMean - TrueMean)./TrueMean);
+SampleVar = var(Paths(:,2:(1+NSteps)));
+TrueVar =  S0^2 * exp(2*mu*Tvet) .* (exp((sigma^2) * Tvet) - 1) ;
+RelErrorV = abs((SampleVar - TrueVar)./TrueVar);
+PercErrors = 100*[RelErrorM', RelErrorV'];

@@ -1,0 +1,44 @@
+set assets := stocks bonds;
+param initwealth := 55;
+param target := 80;
+param reward := 1;
+param penalty := 4;
+
+set init_node := n0;
+set interm_nodes := n1 n2 n3 n4 n5 n6;
+set term_nodes := n7 n8 n9 n10 n11 n12 n13 n14;
+
+param return (tr):
+	stocks   bonds :=
+n1    1.25     1.14
+n2    1.06     1.12
+n3    1.25     1.14
+n4    1.06     1.12
+n5    1.25     1.14
+n6    1.06     1.12
+n7    1.25     1.14
+n8    1.06     1.12
+n9    1.25     1.14
+n10   1.06     1.12
+n11   1.25     1.14
+n12   1.06     1.12
+n13   1.25     1.14
+n14   1.06     1.12  ;
+
+param prob default 0.125;
+
+# immediate predecessors
+set pred[n1] := n0; 
+set pred[n2] := n0; 
+set pred[n3] := n1; 
+set pred[n4] := n1; 
+set pred[n5] := n2; 
+set pred[n6] := n2; 
+set pred[n7] := n3; 
+set pred[n8] := n3; 
+set pred[n9] := n4; 
+set pred[n10] := n4; 
+set pred[n11] := n5; 
+set pred[n12] := n5; 
+set pred[n13] := n6; 
+set pred[n14] := n6; 

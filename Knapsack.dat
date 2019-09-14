@@ -1,0 +1,10 @@
+param NItems = 4;
+
+param: Value Cost :=
+1      10    2
+2       7    1
+3      25    6
+4      24    5;
+
+param Budget := 7;
+

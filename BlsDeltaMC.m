@@ -1,0 +1,10 @@
+function [Delta, CI] = BlsDeltaMC(S0,K,r,T,sigma,dS,NRepl)
+nuT = (r - 0.5*sigma^2)*T;
+siT = sigma * sqrt(T);
+S1 = S0 - dS;
+S2 = S0 + dS;
+Veps = randn(NRepl,1);
+Payoff1 = max(0, S1*exp(nuT+siT*Veps)-K);
+Payoff2 = max(0, S2*exp(nuT+siT*Veps)-K);
+SampleDiff = exp(-r*T)*(Payoff2 - Payoff1)/2/dS;
+[Delta, dummy, CI] = normfit(SampleDiff);
