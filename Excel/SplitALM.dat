@@ -1,0 +1,32 @@
+set assets := stocks bonds;
+param initwealth := 55;
+param scenarios := 8;
+param T := 3;
+
+set links[0] := (1,2) (2,3) (3,4) (4,5) (5,6) (6,7) (7,8);
+set links[1] := (1,2) (2,3) (3,4) (5,6) (6,7) (7,8);
+set links[2] := (1,2) (3,4) (5,6) (7,8);
+
+param target := 80;
+param reward := 1;
+param penalty := 4;
+
+param return :=
+[stocks, 1, *] 1 1.25 2 1.25 3 1.25
+[stocks, 2, *] 1 1.25 2 1.25 3 1.06
+[stocks, 3, *] 1 1.25 2 1.06 3 1.25
+[stocks, 4, *] 1 1.25 2 1.06 3 1.06
+[stocks, 5, *] 1 1.06 2 1.25 3 1.25
+[stocks, 6, *] 1 1.06 2 1.25 3 1.06
+[stocks, 7, *] 1 1.06 2 1.06 3 1.25
+[stocks, 8, *] 1 1.06 2 1.06 3 1.06
+[bonds, 1, *] 1 1.14 2 1.14 3 1.14
+[bonds, 2, *] 1 1.14 2 1.14 3 1.12
+[bonds, 3, *] 1 1.14 2 1.12 3 1.14
+[bonds, 4, *] 1 1.14 2 1.12 3 1.12
+[bonds, 5, *] 1 1.12 2 1.14 3 1.14
+[bonds, 6, *] 1 1.12 2 1.14 3 1.12
+[bonds, 7, *] 1 1.12 2 1.12 3 1.14
+[bonds, 8, *] 1 1.12 2 1.12 3 1.12;
+
+param prob default 0.125;
